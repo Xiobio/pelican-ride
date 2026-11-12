@@ -3,3 +3,6 @@ dist/
 shots/
 .vercel/
 *.log
+
+.vercel
+.env*

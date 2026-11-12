@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<title>鹈鹕骑单车 · 海岸大冒险</title>
+<meta name="description" content="一只戴头盔、围红围巾的白鹈鹕，骑着复古单车沿海岸线追鱼、飞跃跳台、做空中特技。实时 3D，全部程序化生成。" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="鹈鹕骑单车 · 海岸大冒险" />
+<meta property="og:description" content="骑着复古单车的鹈鹕沿海岸线追鱼、飞跃跳台、做空中特技。实时 3D，全部程序化生成。" />
+<meta property="og:image" content="https://pelicanride.vercel.app/og.jpg" />
+<meta property="og:url" content="https://pelicanride.vercel.app/" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="theme-color" content="#0d1424" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='31' fill='%23ff9a4d'/%3E%3Ccircle cx='32' cy='32' r='31' fill='%230d1424' opacity='.15'/%3E%3Cpath d='M14 62 C 14 44, 20 40, 24 34 L 34 36 C 36 46, 38 54, 36 62 Z' fill='%23f6f3ec'/%3E%3Ccircle cx='26' cy='27' r='12' fill='%23f6f3ec'/%3E%3Cpath d='M13.5 25 A 12.5 12.5 0 0 1 38.5 25 L 42 27 L 13.5 27 Z' fill='%23d8322f'/%3E%3Cpath d='M36 27 L62 33 L60 37 L35 34 Z' fill='%23f7c25c'/%3E%3Cpath d='M35 34 L60 37 Q 46 51 37 40 Z' fill='%23f08a3c'/%3E%3Ccircle cx='30' cy='30' r='2.4' fill='%231a0c08'/%3E%3Cpath d='M18 42 L34 46' stroke='%23d7263d' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E" />
+<style>/*__CSS__*/</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="fade"></div>
+<div id="hurt"></div>
+<div id="fallback" hidden>当前浏览器不支持 WebGL2，无法显示 3D 场景。请换用新版 Chrome / Edge / Safari / Firefox。</div>
+
+<!-- ============ 标题 ============ -->
+<section id="title" class="screen show">
+  <div class="title-card">
+    <div class="logo">
+      <svg class="logo-art" viewBox="0 0 300 190" aria-hidden="true">
+        <line class="road" x1="0" y1="181" x2="300" y2="181" stroke="rgba(255,255,255,0.55)" stroke-width="3" />
+        <g class="wheel"><circle cx="78" cy="143" r="33" fill="none" stroke="#f1e7d0" stroke-width="5"/><circle cx="78" cy="143" r="27.5" fill="none" stroke="#1aa3a0" stroke-width="2"/><path d="M78 116 V170 M51 143 H105 M59 124 L97 162 M59 162 L97 124" stroke="#d9f3f0" stroke-width="1.2"/><circle cx="78" cy="143" r="4" fill="#d9f3f0"/></g>
+        <g class="wheel"><circle cx="216" cy="143" r="33" fill="none" stroke="#f1e7d0" stroke-width="5"/><circle cx="216" cy="143" r="27.5" fill="none" stroke="#1aa3a0" stroke-width="2"/><path d="M216 116 V170 M189 143 H243 M197 124 L235 162 M197 162 L235 124" stroke="#d9f3f0" stroke-width="1.2"/><circle cx="216" cy="143" r="4" fill="#d9f3f0"/></g>
+        <path d="M78 143 L140 147 L193 98 L124 94 Z M140 147 L121 86 M216 143 L195 90 L191 76 Q 188 68 176 70" fill="none" stroke="#1aa3a0" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+        <path d="M106 84 Q 120 78 136 85" fill="none" stroke="#7a4a26" stroke-width="7" stroke-linecap="round"/>
+        <path d="M201 62 L239 62 L233 88 L207 88 Z" fill="#c8925a" stroke="#8a5c30" stroke-width="2.5" stroke-linejoin="round"/>
+        <path d="M205 71 H235 M206 79 H234 M213 63 L215 87 M226 63 L225 87" stroke="#8a5c30" stroke-width="1.4"/>
+        <path d="M214 62 L218 46 L228 54 L224 62 Z" fill="#6fc3f0"/>
+        <g class="bob">
+          <path d="M152 50 C 128 40, 108 54, 80 42" stroke="#d7263d" stroke-width="7" fill="none" stroke-linecap="round"/>
+          <path d="M152 56 C 132 54, 116 68, 92 60" stroke="#b01e33" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <path d="M98 82 L74 74 L96 66 Z" fill="#e6dfd0"/>
+          <path d="M94 76 C 90 48, 128 32, 158 48 C 174 58, 168 82, 144 88 C 122 94, 98 94, 94 76 Z" fill="#f6f3ec"/>
+          <path d="M154 58 C 174 50, 160 32, 177 25" stroke="#f6f3ec" stroke-width="15" fill="none" stroke-linecap="round"/>
+          <path d="M146 52 L166 62" stroke="#d7263d" stroke-width="8" stroke-linecap="round"/>
+          <circle cx="181" cy="23" r="12.5" fill="#f6f3ec"/>
+          <path d="M168 21 A 13 13 0 0 1 194 21 L 199 23 L 168 23 Z" fill="#d8322f"/>
+          <path d="M177 9 Q 181 15 180 22" stroke="#fff3dc" stroke-width="3" fill="none"/>
+          <path d="M192 23 L266 37 L262 42 L191 31 Z" fill="#f7c25c"/>
+          <path d="M191 31 L262 42 Q 228 68 197 44 Z" fill="#f08a3c"/>
+          <path d="M262 36 L270 39 L263 44 Z" fill="#e0552a"/>
+          <circle cx="185" cy="26" r="2.5" fill="#1a0c08"/>
+          <path d="M132 84 L148 114" stroke="#f6f3ec" stroke-width="10" stroke-linecap="round"/>
+          <path d="M148 114 L143 145" stroke="#f38a2a" stroke-width="4.5" stroke-linecap="round"/>
+          <path d="M134 147 L154 147" stroke="#f38a2a" stroke-width="5" stroke-linecap="round"/>
+          <path d="M146 60 C 158 74, 170 72, 178 71" stroke="#e6dfd0" stroke-width="10" fill="none" stroke-linecap="round"/>
+        </g>
+      </svg>
+      <h1>鹈鹕骑单车</h1>
+      <p class="tagline">海岸大冒险 · PELICAN RIDE</p>
+    </div>
+    <div class="menu">
+      <button class="btn primary" data-act="play">▶ 开始冒险</button>
+      <div class="row">
+        <button class="btn" data-act="daily">📅 每日挑战<small id="dailyBest"></small></button>
+        <button class="btn" data-act="zen">🌅 悠闲骑行</button>
+      </div>
+      <div class="row">
+        <button class="btn sm" data-act="garage">🧢 车库</button>
+        <button class="btn sm" data-act="missions">📋 任务<i class="dot" id="missionDot" hidden></i></button>
+        <button class="btn sm" data-act="settings">⚙️ 设置</button>
+        <button class="btn sm" data-act="help">❓ 玩法</button>
+      </div>
+    </div>
+    <div class="title-stats">
+      <span title="鱼干（货币）">🐟 <b id="walletT">0</b></span>
+      <span title="冒险模式最高分">🏆 <b id="bestT">0</b></span>
+      <span title="最远骑行">🛣️ <b id="bestDistT">0</b> m</span>
+      <span title="成就">🎖️ <b id="achT">0</b></span>
+    </div>
+    <div class="tip" id="tip"></div>
+    <div class="title-links">
+      <a href="https://github.com/Xiobio/pelican-ride" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>开源仓库</a>
+      <a href="https://github.com/Xiobio" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>@Xiobio</a>
+      <a href="https://x.com/JunquanB" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>@JunquanB</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HUD ============ -->
+<div id="hud" class="hud">
+  <div class="hud-tl panel">
+    <div class="score-line"><b id="score">0</b><span id="mult" class="mult">×1</span></div>
+    <div class="combo-line"><div class="bar combo"><i id="comboFill"></i></div><span id="comboN"></span></div>
+  </div>
+  <div class="hud-tr">
+    <div class="panel status">
+      <div id="hearts" class="hearts"></div>
+      <div class="fishbox">🐟 <b id="fishN">0</b></div>
+    </div>
+    <div class="panel tools">
+      <button class="icon-btn" data-act="cam" title="切换镜头 (C)">🎥</button>
+      <button class="icon-btn" data-act="music" title="音乐 (M)">🎵</button>
+      <button class="icon-btn" data-act="shot" title="截图 (K)">📸</button>
+      <button class="icon-btn" data-act="pause" title="暂停 (P)">⏸</button>
+    </div>
+  </div>
+  <div id="zone" class="zone"><span id="zoneEmoji"></span><div><b id="zoneName"></b><small id="zoneEn"></small></div></div>
+  <div id="warn" class="warn" hidden></div>
+  <div class="hud-bl panel">
+    <div class="gauge">
+      <svg viewBox="0 0 124 124">
+        <defs><linearGradient id="gGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3fd0c9"/><stop offset="0.6" stop-color="#ffc27a"/><stop offset="1" stop-color="#ff5a6e"/></linearGradient></defs>
+        <circle class="bg" cx="62" cy="62" r="52"/><circle class="fg" id="speedArc" cx="62" cy="62" r="52"/>
+      </svg>
+      <div class="val"><div><b id="speedVal">0</b><small>KM/H</small></div></div>
+    </div>
+    <div class="bl-right">
+      <div class="meter"><span>🌶️</span><div class="bar boost"><i id="boostFill"></i></div><kbd>Shift</kbd></div>
+      <div class="meter fever-m"><span>🎉</span><div class="bar fever"><i id="feverFill"></i></div><small id="feverTxt">狂热</small></div>
+      <div class="info"><span id="distVal">0</span> m · <span id="zoneVal">海岸公路</span> · <span id="clockVal">17:12</span></div>
+    </div>
+  </div>
+  <div class="hud-bc"><div id="powers" class="powers"></div></div>
+  <div class="hud-br panel zen-only">
+    <div class="zrow"><span id="sunIcon">🌅</span><input id="timeSlider" type="range" min="0" max="24" step="0.01" value="17.2" aria-label="时刻" /><button class="icon-btn sm on" data-act="flow" title="时间流动">⏯</button></div>
+    <div class="zrow"><button class="chip-btn" data-act="weather">🌧️ 天气</button><button class="chip-btn on" data-act="auto">🤖 自动驾驶</button><button class="chip-btn" data-act="finishZen">🏁 收工</button></div>
+  </div>
+  <div class="touch">
+    <div class="pad left"><button class="tbtn big" data-key="left">◀</button><button class="tbtn big" data-key="right">▶</button></div>
+    <div class="pad right">
+      <div class="rowb"><button class="tbtn" data-tap="bell">🔔</button><button class="tbtn" data-tap="honk">📣</button><button class="tbtn" data-key="boost">🌶️</button></div>
+      <div class="rowb"><button class="tbtn big" data-key="trick">🤸</button><button class="tbtn big" data-key="jump">⤒</button></div>
+    </div>
+  </div>
+</div>
+<div id="pops"></div>
+<div id="toasts"></div>
+<div id="hint" class="hint"></div>
+<div id="fps" hidden></div>
+
+<!-- ============ 暂停 ============ -->
+<section id="pause" class="screen modal">
+  <div class="panel card">
+    <h2>⏸ 已暂停</h2>
+    <div class="mini-missions" id="pauseMissions"></div>
+    <div class="col">
+      <button class="btn primary" data-act="resume">继续骑行</button>
+      <button class="btn" data-act="restart">重新开始</button>
+      <button class="btn" data-act="settings">设置</button>
+      <button class="btn" data-act="quit">结束本局</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 结算 ============ -->
+<section id="over" class="screen modal">
+  <div class="panel card wide">
+    <div class="over-head"><span id="overBadge" class="badge" hidden>🎉 新纪录</span><h2 id="overTitle">骑行结束</h2></div>
+    <div class="over-score"><b id="overScore">0</b><small>最高 <span id="overBest">0</span></small></div>
+    <div class="over-grid" id="overGrid"></div>
+    <div class="over-earn">本局收获 <b>🐟 <span id="overFish">0</span></b>　钱包 <b>🐟 <span id="overWallet">0</span></b></div>
+    <div id="overMissions" class="mini-missions"></div>
+    <div class="row">
+      <button class="btn primary" data-act="again">🔁 再来一局</button>
+      <button class="btn" data-act="revive" id="reviveBtn">❤️ 接着骑 <small>🐟80</small></button>
+    </div>
+    <div class="row">
+      <button class="btn sm" data-act="garage">🧢 车库</button>
+      <button class="btn sm" data-act="missions">📋 任务</button>
+      <button class="btn sm" data-act="home">🏠 主菜单</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 车库 ============ -->
+<section id="garage" class="screen side">
+  <div class="panel sheet">
+    <div class="sheet-head"><h2>🧢 车库</h2><span class="wallet">🐟 <b id="walletG">0</b></span><button class="icon-btn" data-act="back">✕</button></div>
+    <div class="tabs" id="garageTabs"></div>
+    <div class="grid" id="garageGrid"></div>
+    <p class="note">拖动画面可以转着看 · 鱼不够的物品可以先点一下试穿</p>
+  </div>
+</section>
+
+<!-- ============ 任务 / 成就 ============ -->
+<section id="missions" class="screen modal">
+  <div class="panel card wide tall">
+    <div class="sheet-head"><h2>📋 任务与成就</h2><span class="wallet">🐟 <b id="walletM">0</b></span><button class="icon-btn" data-act="back">✕</button></div>
+    <h3>进行中的任务</h3>
+    <div id="missionList" class="mission-list"></div>
+    <h3>成就 <small id="achCount"></small></h3>
+    <div id="achGrid" class="ach-grid"></div>
+  </div>
+</section>
+
+<!-- ============ 设置 ============ -->
+<section id="settings" class="screen modal">
+  <div class="panel card">
+    <div class="sheet-head"><h2>⚙️ 设置</h2><button class="icon-btn" data-act="back">✕</button></div>
+    <label class="set"><span>画质</span><div class="seg" id="qualitySeg"></div></label>
+    <label class="set"><span>主音量</span><input type="range" min="0" max="1" step="0.01" id="volMaster" /></label>
+    <label class="set"><span>音乐</span><input type="range" min="0" max="1" step="0.01" id="volMusic" /></label>
+    <label class="set"><span>音效</span><input type="range" min="0" max="1" step="0.01" id="volSfx" /></label>
+    <label class="set"><span>镜头震动</span><input type="checkbox" id="optShake" /></label>
+    <label class="set"><span>新手提示</span><input type="checkbox" id="optHints" /></label>
+    <label class="set"><span>显示帧率</span><input type="checkbox" id="optFps" /></label>
+    <div class="row"><button class="btn sm danger" data-act="wipe">清除存档</button></div>
+  </div>
+</section>
+
+<!-- ============ 帮助 ============ -->
+<section id="help" class="screen modal">
+  <div class="panel card wide">
+    <div class="sheet-head"><h2>❓ 怎么玩</h2><button class="icon-btn" data-act="back">✕</button></div>
+    <ul class="keys">
+      <li><kbd>A</kbd><kbd>D</kbd> / <kbd>←</kbd><kbd>→</kbd> 左右转向</li><li><kbd>W</kbd> 用力蹬　<kbd>S</kbd> 刹车</li>
+      <li><kbd>空格</kbd> 跳跃 · 空中再按一次扑翅二段跳</li><li>空中<b>按住</b> <kbd>空格</kbd> 展翅滑翔</li>
+      <li><kbd>T</kbd> 空中特技：单按后空翻 · 配 <kbd>←</kbd><kbd>→</kbd> 转体 · 配 <kbd>↑</kbd> 超人式</li><li>地面按住 <kbd>T</kbd> 放手翘头</li>
+      <li><kbd>Shift</kbd> 辣椒冲刺：无敌 + 撞飞障碍</li><li><kbd>B</kbd> 车铃：赶走海鸥</li>
+      <li><kbd>H</kbd> 大叫：吓跑螃蟹、把鱼吓出海面</li><li><kbd>C</kbd> 镜头　<kbd>P</kbd> 暂停　<kbd>M</kbd> 音乐</li>
+      <li><kbd>K</kbd> 截图　<kbd>F</kbd> 全屏　<kbd>U</kbd> 隐藏界面</li><li><kbd>N</kbd> 时间快进 3 小时</li>
+    </ul>
+    <p class="note">抓鱼攒连击 → 倍率越来越高 → 攒满狂热槽下鱼雨。特技、极限闪避、穿环都能攒冲刺槽。撞到障碍会掉一颗心，三颗心掉光本局结束。抓到的鱼会存进钱包，可以去车库换帽子、围巾、车漆和强化。支持触屏和手柄。</p>
+    <button class="btn primary" data-act="back">知道了</button>
+  </div>
+</section>
+
+<script>/*__JS__*/</script>
+</body>
+</html>

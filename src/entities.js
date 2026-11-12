@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { Geo, selfLit } from './geo.js';
 import { LANES, ROAD_HALF, DIFFICULTY } from './track.js';
 import { makeRng, clamp, lerp, smooth, TAU } from './util.js';
+import { L } from './i18n.js';
 
 const PI = Math.PI;
 const _v = new THREE.Vector3();
@@ -36,12 +37,12 @@ export const TYPES = {
   gold:    { kind: 'collect', r: 1.25 },
   ring:    { kind: 'ring', r: 1.25 },
   magnet:  { kind: 'power', r: 1.3 }, shield: { kind: 'power', r: 1.3 }, x2: { kind: 'power', r: 1.3 }, chili: { kind: 'power', r: 1.3 }, heart: { kind: 'power', r: 1.3 },
-  cone:    { kind: 'hazard', hw: 0.3, hl: 0.3, hh: 0.62, name: '路锥' },
-  barrier: { kind: 'hazard', hw: 1.15, hl: 0.3, hh: 0.98, name: '路障' },
-  rock:    { kind: 'hazard', hw: 0.6, hl: 0.55, hh: 0.8, name: '落石' },
-  crab:    { kind: 'hazard', hw: 0.5, hl: 0.42, hh: 0.5, name: '螃蟹' },
-  barrel:  { kind: 'hazard', hw: 0.7, hl: 0.5, hh: 0.95, name: '木桶' },
-  cart:    { kind: 'hazard', hw: 0.8, hl: 1.1, hh: 2.1, name: '冰淇淋车' },
+  cone:    { kind: 'hazard', hw: 0.3, hl: 0.3, hh: 0.62, name: L('路锥', "cone") },
+  barrier: { kind: 'hazard', hw: 1.15, hl: 0.3, hh: 0.98, name: L('路障', "barrier") },
+  rock:    { kind: 'hazard', hw: 0.6, hl: 0.55, hh: 0.8, name: L('落石', "rock") },
+  crab:    { kind: 'hazard', hw: 0.5, hl: 0.42, hh: 0.5, name: L('螃蟹', "crab") },
+  barrel:  { kind: 'hazard', hw: 0.7, hl: 0.5, hh: 0.95, name: L('木桶', "barrel") },
+  cart:    { kind: 'hazard', hw: 0.8, hl: 1.1, hh: 2.1, name: L('冰淇淋车', "ice cream cart") },
   puddle:  { kind: 'slip', hw: 1.0, hl: 1.0, hh: 0.3 },
   ball:    { kind: 'kick', hw: 0.5, hl: 0.5, hh: 0.9 },
   castle:  { kind: 'kick', hw: 0.6, hl: 0.6, hh: 1.0 },

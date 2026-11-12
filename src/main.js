@@ -17,8 +17,10 @@ import { CameraRig } from './camera.js';
 import { UI } from './ui.js';
 import { Game } from './game.js';
 import { clamp } from './util.js';
+import { L, applyDom } from './i18n.js';
 
 function boot() {
+  applyDom();
   const test = document.createElement('canvas');
   if (!test.getContext('webgl2')) { document.getElementById('fallback').hidden = false; document.getElementById('fade').classList.add('clear'); return; }
 
@@ -69,10 +71,10 @@ function boot() {
     const zoneKey = p.zoneKey;
     ambient.update(dt, time, p.dist, gfx.camera, zoneKey, p.speed, o.x, o.y);
     for (const ev of ambient.events) {
-      if (ev.type === 'whale') { audio.whale(); if (st === 'play') { game.R.whale = true; ui.toast('🐋', '鲸鱼！', '快看海面'); } }
+      if (ev.type === 'whale') { audio.whale(); if (st === 'play') { game.R.whale = true; ui.toast('🐋', L('鲸鱼！', "A whale!"), L('快看海面', "Look out to sea")); } }
       else if (ev.type === 'whaleSplash') { audio.bigSplash(); cam.shake(0.25); if (st === 'play') entities.spawnFlying(p.dist + 20 + p.speed, 8, 0.3); }
       else if (ev.type === 'firework') audio.firework();
-      else if (ev.type === 'dolphin' && st === 'play') ui.toast('🐬', '海豚来伴游了', '');
+      else if (ev.type === 'dolphin' && st === 'play') ui.toast('🐬', L('海豚来伴游了', "Dolphins have joined the ride"), '');
     }
     ambient.events.length = 0;
 
@@ -115,7 +117,7 @@ function boot() {
     });
 
     ui.hud(rawDt);
-    ui.setZoneName(ZONES[zoneKey].name);
+    ui.setZoneName(ZONES[zoneKey].label);
     if (render) gfx.render();
     input.endFrame();
 
@@ -124,7 +126,7 @@ function boot() {
     if (fpsT >= 0.5) {
       fpsShown = Math.round(fpsN / fpsT); fpsT = 0; fpsN = 0;
       ui.setFps(fpsShown, `${gfx.renderer.info.render.calls} calls · ${(gfx.renderer.info.render.triangles / 1000).toFixed(0)}k tris`);
-      if (fpsShown < 28 && !document.hidden) { lowT += 0.5; if (lowT >= 5 && gfx.quality > 0) { lowT = 0; const nq = gfx.quality - 1; save.d.settings.quality = nq; gfx.setQuality(nq); sky.setQuality(nq); save.flush(); ui.toast('⚙️', '已自动降低画质', '可在设置里改回来'); [...document.getElementById('qualitySeg').children].forEach((c, j) => c.classList.toggle('on', j === nq)); } }
+      if (fpsShown < 28 && !document.hidden) { lowT += 0.5; if (lowT >= 5 && gfx.quality > 0) { lowT = 0; const nq = gfx.quality - 1; save.d.settings.quality = nq; gfx.setQuality(nq); sky.setQuality(nq); save.flush(); ui.toast('⚙️', L('已自动降低画质', "Quality lowered automatically"), L('可在设置里改回来', "You can change it back in Settings")); [...document.getElementById('qualitySeg').children].forEach((c, j) => c.classList.toggle('on', j === nq)); } }
       else lowT = Math.max(0, lowT - 0.25);
     }
   }

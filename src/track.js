@@ -1,5 +1,6 @@
 // 赛道：路线中心线、起伏、分区（纯函数，不依赖 three）
 import { clamp, lerp, smooth, makeRng, fbm, vnoise } from './util.js';
+import { L } from './i18n.js';
 
 export const SEA = -1;            // 海在 -X 一侧（左手边）
 export const ROAD_HALF = 4.0;     // 路面半宽
@@ -23,6 +24,7 @@ export const ZONES = {
   blossom: { key: 'blossom', name: '樱花坡道', en: 'Blossom Hill',    emoji: '🌸', roadY: 7.5, seaW: 20, hillH: 15, hillW: 52, rock: 0.35, sand: 0.1,  bridge: 0, hills: 1.5,
              grass: [0.42, 0.58, 0.30], grass2: [0.62, 0.66, 0.40], sandC: [0.86, 0.78, 0.62], rockC: [0.48, 0.44, 0.46] },
 };
+for (const k in ZONES) { const z = ZONES[k]; z.label = L(z.name, z.en); z.sub = L(z.en.toUpperCase(), z.name); } // 当前语言下的主标题 / 副标题
 const ORDER = ['village', 'beach', 'cliff', 'bridge', 'blossom', 'coast'];
 const BLEND = 70; // 分区过渡长度
 

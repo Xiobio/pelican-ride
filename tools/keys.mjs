@@ -8,7 +8,7 @@ await page.setViewport({ width: 1280, height: 720 });
 const logs = [];
 page.on('console', m => { if (m.type() === 'error' || m.type() === 'warning') logs.push(`[${m.type()}] ${m.text()}`); });
 page.on('pageerror', e => logs.push('[pageerror] ' + (e.stack || e.message)));
-await page.goto(pathToFileURL(path.resolve('dist/index.html')).href, { waitUntil: 'load' });
+await page.goto(pathToFileURL(path.resolve('dist/index.html')).href + (process.argv[2] ? '?lang=' + process.argv[2] : ''), { waitUntil: 'load' });
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const st = (expr) => page.evaluate(expr);
 const ok = (name, cond, extra = '') => console.log((cond ? 'PASS ' : 'FAIL ') + name + (extra ? '  ' + extra : ''));

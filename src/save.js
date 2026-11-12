@@ -11,7 +11,7 @@ const DEF = () => ({
   owned: { hat: ['helmet'], glasses: ['none'], scarf: ['red'], paint: ['teal'], trail: ['none'] },
   equip: { hat: 'helmet', glasses: 'none', scarf: 'red', paint: 'teal', trail: 'none' },
   up: { magnet: 0, helmet: 0, chili: 0, appetite: 0, radar: 0 },
-  settings: { quality: 2, master: 0.8, music: 0.6, sfx: 0.9, musicOn: true, shake: true, fps: false, hints: true },
+  settings: { lang: null, quality: 2, master: 0.8, music: 0.6, sfx: 0.9, musicOn: true, shake: true, fps: false, hints: true },
   seen: {},
 });
 

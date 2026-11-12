@@ -3,16 +3,17 @@ import * as THREE from 'three';
 import { clamp, lerp, damp, smooth, easeInOut, easeOutCubic, makeRng, hashStr, todayKey, TAU } from './util.js';
 import { LANES, ROAD_HALF, DIFFICULTY, ZONES } from './track.js';
 import { ACHIEVEMENTS, MISSIONS, UPGRADES } from './data.js';
+import { L } from './i18n.js';
 
 const PI = Math.PI;
 const G = 21, JUMP_V = 8.4, FLAP_V = 7.4, LAT_MAX = ROAD_HALF - 0.6;
 const _v = new THREE.Vector3(), _w = new THREE.Vector3();
 const TRICKS = {
-  backflip: { name: '后空翻', dur: 0.72, score: 150, key: 'backflips' },
-  spin: { name: '360° 转体', dur: 0.6, score: 120, key: 'spins' },
-  superman: { name: '超人式', dur: 0.78, score: 180, key: 'supermans' },
+  backflip: { name: L('后空翻', "Backflip"), dur: 0.72, score: 150, key: 'backflips' },
+  spin: { name: L('360° 转体', "360 Spin"), dur: 0.6, score: 120, key: 'spins' },
+  superman: { name: L('超人式', "Superman"), dur: 0.78, score: 180, key: 'supermans' },
 };
-const POWER_NAME = { magnet: '磁铁', shield: '泡泡护盾', x2: '双倍得分', chili: '魔鬼辣椒', heart: '爱心' };
+const POWER_NAME = { magnet: L('磁铁', "Magnet"), shield: L('泡泡护盾', "Bubble Shield"), x2: L('双倍得分', "Double Score"), chili: L('魔鬼辣椒', "Ghost Pepper"), heart: L('爱心', "Heart") };
 
 export class Game {
   constructor(c) {
@@ -139,7 +140,7 @@ export class Game {
   }
   _startFever() {
     const p = this.p; p.feverT = 8; p.fever = 100; p.feverSpawn = 0; this.R.fevers++;
-    this.audio.feverSfx(); this.ui.toast('🎉', '鱼群狂热！', '下鱼雨啦 · 得分 ×2'); this.cam.shake(0.3);
+    this.audio.feverSfx(); this.ui.toast('🎉', L('鱼群狂热！', "FISH FRENZY!"), L('下鱼雨啦 · 得分 ×2', "It’s raining fish · Score ×2")); this.cam.shake(0.3);
     this.fx.sparkle(this.out.x, this.out.y + 1.5, -p.dist, 0xff8ad0, 30);
     this.entities.spawnFlying(p.dist + 18, 7, 0.3);
   }
@@ -230,7 +231,7 @@ export class Game {
       if (!p.wheelie) { p.wheelie = true; p.wheelieT = 0; }
       p.wheelieT += dt; p.score += 16 * dt * this._mult(); p.boost = Math.min(100, p.boost + 7 * dt);
       if (p.wheelieT > R.wheelieMax) R.wheelieMax = p.wheelieT;
-      if (Math.floor(p.wheelieT) > Math.floor(p.wheelieT - dt)) { this.combo(1, 3); this.ui.pop('翘头 ' + Math.floor(p.wheelieT) + 's', this._headPos(), 'trick'); }
+      if (Math.floor(p.wheelieT) > Math.floor(p.wheelieT - dt)) { this.combo(1, 3); this.ui.pop(L('翘头 ', "Wheelie ") + Math.floor(p.wheelieT) + 's', this._headPos(), 'trick'); }
     } else p.wheelie = false;
     p.wheelieA = damp(p.wheelieA, p.wheelie ? 0.62 : 0, p.wheelie ? 9 : 12, dt);
 
@@ -244,7 +245,7 @@ export class Game {
       p.feverT -= dt; p.fever = (p.feverT / 8) * 100;
       p.feverSpawn -= dt;
       if (p.feverSpawn <= 0) { p.feverSpawn = 0.6; if (Math.random() < 0.3) this.entities.spawnFlying(p.dist + 20 + p.speed, 4, 0.25); else this.entities.spawnRain(p.dist + 24 + p.speed * 1.2 + Math.random() * 8); }
-      if (p.feverT <= 0) { p.fever = 0; this.ui.toast('😌', '狂热结束', '继续保持连击'); }
+      if (p.feverT <= 0) { p.fever = 0; this.ui.toast('😌', L('狂热结束', "Frenzy over"), L('继续保持连击', "Keep that combo going")); }
     }
     if (playing) p.score += p.speed * dt * (p.feverT > 0 ? 2 : 1) * (p.x2T > 0 ? 2 : 1);
 
@@ -267,13 +268,13 @@ export class Game {
       if (playing) {
         if (!R.zoneSet[zk]) { R.zoneSet[zk] = 1; R.zones++; }
         const Z = ZONES[zk]; this.ui.zoneBanner(Z); this.audio.zone();
-        if (!zen) this.addScore(200, '抵达' + Z.name, 'bonus');
+        if (!zen) this.addScore(200, L('抵达', 'Reached ') + Z.label, 'bonus');
         this._rollWeather();
       }
     }
     if (playing && p.dist >= p.nextKm) {
       const km = p.nextKm / 1000; p.nextKm += 1000;
-      this.ui.toast('🚩', `${km} 公里！`, zen ? '海风正好' : `里程奖励 +${500 * km}`); if (!zen) p.score += 500 * km;
+      this.ui.toast('🚩', L(`${km} 公里！`, `${km} km!`), zen ? L('海风正好', "The sea breeze is perfect") : L(`里程奖励 +${500 * km}`, `Distance bonus +${500 * km}`)); if (!zen) p.score += 500 * km;
       this.ambient.fireworks(this.sky.night > 0.5 ? 7 : 3); this.audio.ach();
     }
     this._weather(dt, playing);
@@ -299,11 +300,11 @@ export class Game {
     this.fx.dust(x, gy, z, 6 + impact * 10); this.audio.land(impact); this.cam.shake(impact * 0.25);
     if (p.trick) {
       const tk = p.trick;
-      if (tk.t < 0.55 && this.state === 'play') { p.trick = null; this._crash(null, '特技失败'); return; }
-      this._trickDone(tk, 0.5); this.ui.pop('勉强落地', this._headPos(), 'warn');
+      if (tk.t < 0.55 && this.state === 'play') { p.trick = null; this._crash(null, L('特技失败', "Trick failed")); return; }
+      this._trickDone(tk, 0.5); this.ui.pop(L('勉强落地', "Sketchy landing"), this._headPos(), 'warn');
     } else if (p.airTricks > 0 && this.state === 'play') {
       const n = p.airTricks;
-      this.addScore(60 * n, n > 1 ? `完美落地 ×${n}` : '完美落地', 'perfect'); p.boost = Math.min(100, p.boost + 9 * n); this.combo(1, 6);
+      this.addScore(60 * n, n > 1 ? L(`完美落地 ×${n}`, `Perfect landing ×${n}`) : L('完美落地', "Perfect landing"), 'perfect'); p.boost = Math.min(100, p.boost + 9 * n); this.combo(1, 6);
       R.perfect++; this.audio.perfect(); this.fx.sparkle(x, gy + 0.3, z, 0xfff2a8, 14); p.speed += 1.2;
     }
     if (p.airTricks > R.maxAirTricks) R.maxAirTricks = p.airTricks;
@@ -327,17 +328,17 @@ export class Game {
     const p = this.p; p.bellCd = 0.3; this.audio.bell();
     let n = 0;
     for (const e of this.entities.list) if (e.type === 'gull' && !e.custom && e.state === 0 && e.s - p.dist > -4 && e.s - p.dist < 36) { this.entities.scareGull(e); n++; }
-    if (n && this.state === 'play') { this.R.gulls += n; this.addScore(20 * n, `赶走海鸥 ×${n}`, 'bonus'); this.combo(n, 2 * n); this.audio.gull(); }
+    if (n && this.state === 'play') { this.R.gulls += n; this.addScore(20 * n, L(`赶走海鸥 ×${n}`, `Gulls shooed ×${n}`), 'bonus'); this.combo(n, 2 * n); this.audio.gull(); }
     this.fx.sparkle(this.out.x - 0.2, this.out.y + 1.15, -p.dist - 0.4, 0xfff6c8, 5);
   }
   _honk() {
     const p = this.p; p.honkCd = 0.7; this.audio.honk(); this.pelican.honk();
     let n = 0;
     for (const e of this.entities.list) if (e.type === 'crab' && e.state === 0 && e.s - p.dist > -3 && e.s - p.dist < 34) { this.entities.scareCrab(e); n++; }
-    if (n && this.state === 'play') { this.R.crabs += n; this.addScore(15 * n, `吓跑螃蟹 ×${n}`, 'bonus'); this.combo(n, 2 * n); this.audio.crab(); }
+    if (n && this.state === 'play') { this.R.crabs += n; this.addScore(15 * n, L(`吓跑螃蟹 ×${n}`, `Crabs scared ×${n}`), 'bonus'); this.combo(n, 2 * n); this.audio.crab(); }
     if (p.summonCd <= 0 && this.track.params(p.dist + 20, {}).bridge < 0.9) {
       p.summonCd = 7; this.entities.spawnFlying(p.dist + 15 + p.speed * 0.9, 5, 0.15 + this.save.d.up.radar * 0.05); this.audio.splash();
-      if (this.state === 'play') this.ui.hintOnce('honkfish', '大叫把鱼吓出了海面，接住它们！');
+      if (this.state === 'play') this.ui.hintOnce('honkfish', L('大叫把鱼吓出了海面，接住它们！', "Your squawk scared fish out of the sea — catch them!"));
     }
   }
 
@@ -379,7 +380,7 @@ export class Game {
           if (!e.passed && ds <= 0) {
             e.passed = true;
             if (active && Math.abs(du) < 1.2 && Math.abs(py + 1.15 - e.y) < 1.25) {
-              e.dead = true; R.rings++; if (play) { this.addScore(100, '穿环', 'bonus'); p.boost = Math.min(100, p.boost + 14); this.combo(2, 6); }
+              e.dead = true; R.rings++; if (play) { this.addScore(100, L('穿环', "Ring!"), 'bonus'); p.boost = Math.min(100, p.boost + 14); this.combo(2, 6); }
               this.audio.ring(); this.fx.sparkle(e.obj.position.x, e.obj.position.y, e.obj.position.z, 0xffd45a, 22);
             }
           }
@@ -392,26 +393,26 @@ export class Game {
             if (p.boosting) {
               this.entities.knock(e, p.speed * 1.3, Math.sign(du) || 1); R.smash++; this.audio.smash(); this.cam.shake(0.3);
               this.fx.smash(e.obj.position.x, e.obj.position.y + 0.5, e.obj.position.z);
-              if (play) { this.addScore(30, '撞飞' + (T.name || ''), 'bonus'); this.combo(1, 3); }
+              if (play) { this.addScore(30, L('撞飞', 'Smashed ') + (T.name || ''), 'bonus'); this.combo(1, 3); }
             } else if (p.invuln > 0) { /* 无敌穿过 */ }
             else if (p.shield) {
               p.shield = false; p.invuln = 1.2; this.entities.knock(e, p.speed, Math.sign(du) || 1); this.audio.smash(); this.cam.shake(0.35);
               this.fx.burst('soft', this.out.x, this.out.y + 1.2, -ps, 16, { color: 0xbfefff, speed: 5, life: 0.6, size: 0.3, shape: 3, grav: 2 });
-              this.ui.pop('护盾破碎', this._headPos(), 'warn');
-            } else this._crash(e, '撞到' + (T.name || '障碍'));
+              this.ui.pop(L('护盾破碎', "Shield popped"), this._headPos(), 'warn');
+            } else this._crash(e, L('撞到', 'Hit: ') + (T.name || L('障碍', 'hazard')));
           } else if (!e.passed && ds < -(T.hl + 0.5)) {
             e.passed = true;
             if (!play || p.crashT > 0 || p.invuln > 0.5) break;
             const gap = Math.abs(du) - (T.hw + 0.33);
-            if (gap < 0 && py >= T.hh - 0.06) { this.addScore(20, '飞跃', 'bonus'); this.combo(1, 3); }
-            else if (gap >= 0 && gap < 0.55 && py < T.hh + 0.3) { R.near++; this.addScore(35, '极限闪避', 'near'); p.boost = Math.min(100, p.boost + 10); this.combo(1, 5); this.audio.near(); }
+            if (gap < 0 && py >= T.hh - 0.06) { this.addScore(20, L('飞跃', "Cleared"), 'bonus'); this.combo(1, 3); }
+            else if (gap >= 0 && gap < 0.55 && py < T.hh + 0.3) { R.near++; this.addScore(35, L('极限闪避', "Near miss"), 'near'); p.boost = Math.min(100, p.boost + 10); this.combo(1, 5); this.audio.near(); }
           }
           break;
         }
         case 'slip': {
           if (!e.hit && Math.abs(ds) < 1.0 && Math.abs(du) < 1.05 && p.grounded && active) {
             e.hit = true; this.fx.splash(e.obj.position.x, e.obj.position.y + 0.05, e.obj.position.z, 18);
-            if (!p.boosting) { p.slipT = 0.85; this.audio.slip(); if (play) this.ui.pop('打滑！', this._headPos(), 'warn'); } else this.audio.splash();
+            if (!p.boosting) { p.slipT = 0.85; this.audio.slip(); if (play) this.ui.pop(L('打滑！', "Slip!"), this._headPos(), 'warn'); } else this.audio.splash();
           }
           break;
         }
@@ -419,7 +420,7 @@ export class Game {
           if (!e.hit && Math.abs(ds) < T.hl + 0.4 && Math.abs(du) < T.hw + 0.35 && py < T.hh && active) {
             this.entities.knock(e, p.speed * 1.5 + 4, Math.sign(du) || (Math.random() < 0.5 ? 1 : -1), 1.8); this.audio.kick(); R.kicks++;
             if (e.type === 'castle') this.fx.smash(e.obj.position.x, e.obj.position.y + 0.4, e.obj.position.z, 0xe6cf98); else this.fx.dust(e.obj.position.x, e.obj.position.y, e.obj.position.z, 6);
-            if (play) { this.addScore(15, e.type === 'castle' ? '沙堡粉碎' : '砰！', 'bonus'); this.combo(1, 2); }
+            if (play) { this.addScore(15, e.type === 'castle' ? L('沙堡粉碎', "Castle smashed") : L('砰！', "Boing!"), 'bonus'); this.combo(1, 2); }
           }
           break;
         }
@@ -427,7 +428,7 @@ export class Game {
           if (e.custom || e.state !== 0) break;
           if (Math.abs(ds) < 0.85 && Math.abs(du) < 0.75 && py < 0.7 && active) {
             this.entities.scareGull(e); this.audio.gull(); this.fx.feathers(e.obj.position.x, e.obj.position.y + 0.4, e.obj.position.z, 8);
-            if (play && !p.boosting && p.invuln <= 0) { const n = Math.min(3, p.fish); if (n > 0) { p.fish -= n; this.ui.pop(`被海鸥抢走 ${n} 条鱼！`, this._headPos(), 'warn'); p.combo = 0; p.mult = 1; p.comboT = 0; } this.ui.hintOnce('gull', '按 B 响铃可以提前赶走海鸥'); }
+            if (play && !p.boosting && p.invuln <= 0) { const n = Math.min(3, p.fish); if (n > 0) { p.fish -= n; this.ui.pop(L(`被海鸥抢走 ${n} 条鱼！`, `A gull stole ${n} fish!`), this._headPos(), 'warn'); p.combo = 0; p.mult = 1; p.comboT = 0; } this.ui.hintOnce('gull', L('按 B 响铃可以提前赶走海鸥', "Press B to ring the bell and shoo gulls away early")); }
           }
           break;
         }
@@ -439,7 +440,7 @@ export class Game {
               if (ds <= -1.45 && !e.hit) { // 飞出跳台
                 e.hit = true; p.grounded = false; p.vy = 6.2 + p.speed * 0.42; p.flaps = 1; p.airT = 0; p.airTricks = 0; p.lastTrick = ''; p.glideT = 0;
                 R.jumps++; this.audio.jump(); this.cam.shake(0.15);
-                if (play) { this.ui.pop('起飞！', this._headPos(), 'trick'); this.ui.hintOnce('trick', '空中按 T 做特技（配合 ←→ / ↑ 换花样），落地前要转完！'); }
+                if (play) { this.ui.pop(L('起飞！', "Liftoff!"), this._headPos(), 'trick'); this.ui.hintOnce('trick', L('空中按 T 做特技（配合 ←→ / ↑ 换花样），落地前要转完！', "Press T in the air for tricks (add ←→ or ↑ for variety) — finish before you land!")); }
               }
             }
           } else if (e.hit && ds > 2) e.hit = false;
@@ -448,7 +449,7 @@ export class Game {
         case 'pad': {
           if (!e.hit && Math.abs(ds) < T.hl && Math.abs(du) < T.hw && p.grounded && active) {
             e.hit = true; p.boost = Math.min(100, p.boost + 45); p.speed += 4.5; this.audio.boost(); this.cam.shake(0.15);
-            if (play) { this.ui.pop('加速带！', this._headPos(), 'bonus'); this.ui.hintOnce('boost', '按住 Shift 冲刺：无敌并能撞飞障碍'); }
+            if (play) { this.ui.pop(L('加速带！', "Speed pad!"), this._headPos(), 'bonus'); this.ui.hintOnce('boost', L('按住 Shift 冲刺：无敌并能撞飞障碍', "Hold Shift to boost: invincible, and you smash through hazards")); }
             this.fx.sparkle(this.out.x, this.out.y + 0.3, -ps, 0x7ff5e6, 14);
           }
           break;
@@ -456,7 +457,7 @@ export class Game {
       }
       // 新手提示
       if (play && ds > 8 && ds < 30 && !this.save.d.seen[e.type]) {
-        const tips = { gull: '前方有海鸥！按 B 响铃赶走它们', crab: '螃蟹过马路！按 H 大叫吓跑它们', ramp: '冲上跳台起飞！', barrier: '←→ 躲开路障，或者空格跳过去', cone: '←→ 转向躲避，空格跳跃', cart: '冰淇淋车太高跳不过去，绕开它', puddle: '水坑会打滑，尽量绕开', barrel: '木桶滚过来了！跳过去或躲开', ball: '沙滩球可以踢飞，有奖励', ring: '穿过金环有额外奖励：二段跳 + 按住空格滑翔' };
+        const tips = { gull: L('前方有海鸥！按 B 响铃赶走它们', "Gulls ahead! Press B to ring them away"), crab: L('螃蟹过马路！按 H 大叫吓跑它们', "Crabs crossing! Press H to squawk and scare them off"), ramp: L('冲上跳台起飞！', "Hit the ramp and fly!"), barrier: L('←→ 躲开路障，或者空格跳过去', "←→ to dodge the barrier, or Space to jump it"), cone: L('←→ 转向躲避，空格跳跃', "←→ to steer, Space to jump"), cart: L('冰淇淋车太高跳不过去，绕开它', "The ice cream cart is too tall to jump — go around"), puddle: L('水坑会打滑，尽量绕开', "Puddles make you slip — steer around them"), barrel: L('木桶滚过来了！跳过去或躲开', "Barrels incoming! Jump or dodge"), ball: L('沙滩球可以踢飞，有奖励', "Beach balls can be kicked for a bonus"), ring: L('穿过金环有额外奖励：二段跳 + 按住空格滑翔', "Fly through gold rings for a bonus: double jump, then hold Space to glide") };
         if (tips[e.type]) { this.save.d.seen[e.type] = 1; this.ui.hint(tips[e.type]); }
       }
     }
@@ -468,7 +469,7 @@ export class Game {
     const play = this.state === 'play';
     if (play) {
       p.fish += gold ? 3 : 1; R.fish++; if (gold) R.gold++;
-      this.addScore(gold ? 60 : 10, gold ? '金鱼' : '', gold ? 'gold' : 'fish', e.obj.position.clone().applyMatrix4(this.world.root.matrixWorld));
+      this.addScore(gold ? 60 : 10, gold ? L('金鱼', "Goldfish") : '', gold ? 'gold' : 'fish', e.obj.position.clone().applyMatrix4(this.world.root.matrixWorld));
       this.combo(1, gold ? 5 : 1.5); p.boost = Math.min(100, p.boost + (gold ? 6 : 1.6));
     }
     if (gold) this.audio.gold(); else this.audio.fish(p.combo);
@@ -484,9 +485,9 @@ export class Game {
       case 'shield': p.shield = true; break;
       case 'x2': p.x2T = 10; break;
       case 'chili': p.boost = 100; p.boosting = true; p.forceBoost = 3.6; this.audio.boost(); this.cam.shake(0.3); break;
-      case 'heart': if (p.hearts < p.maxHearts) p.hearts++; else if (play) this.addScore(200, '满血奖励', 'bonus'); break;
+      case 'heart': if (p.hearts < p.maxHearts) p.hearts++; else if (play) this.addScore(200, L('满血奖励', "Full health bonus"), 'bonus'); break;
     }
-    if (play) { this.ui.toast({ magnet: '🧲', shield: '🛡️', x2: '✖️', chili: '🌶️', heart: '❤️' }[e.type], POWER_NAME[e.type], { magnet: '鱼会自己飞过来', shield: '抵挡一次碰撞', x2: '10 秒内得分翻倍', chili: '喷火冲刺！', heart: '恢复一点生命' }[e.type]); this.combo(1, 4); }
+    if (play) { this.ui.toast({ magnet: '🧲', shield: '🛡️', x2: '✖️', chili: '🌶️', heart: '❤️' }[e.type], POWER_NAME[e.type], { magnet: L('鱼会自己飞过来', "Fish fly straight to you"), shield: L('抵挡一次碰撞', "Blocks one hit"), x2: L('10 秒内得分翻倍', "Double score for 10s"), chili: L('喷火冲刺！', "Fire-breathing boost!"), heart: L('恢复一点生命', "Restores one heart") }[e.type]); this.combo(1, 4); }
   }
 
   _crash(e, why) {
@@ -496,11 +497,11 @@ export class Game {
     this.fx.feathers(x, y, z, 18); this.fx.dust(x, this.track.cy(p.dist), z, 8);
     this.audio.crash(); this.cam.shake(0.75);
     p.combo = 0; p.mult = 1; p.comboT = 0; p.boosting = false; p.trick = null; p.wheelie = false;
-    if (this.mode === 'zen' || this.state !== 'play') { p.invuln = 1.2; p.speed *= 0.6; p.crashT = 0.5; this.ui.pop('哎哟！', this._headPos(), 'warn'); return; }
+    if (this.mode === 'zen' || this.state !== 'play') { p.invuln = 1.2; p.speed *= 0.6; p.crashT = 0.5; this.ui.pop(L('哎哟！', "Ouch!"), this._headPos(), 'warn'); return; }
     p.hearts--; R.hits++; p.noHitFrom = p.dist; p.fever = Math.max(0, p.fever - 30);
     p.crashT = 0.95; p.invuln = 2.6; p.speed *= 0.3; p.vy = 5.5; p.grounded = false; p.y = Math.max(p.y, 0.05); p.flaps = 0;
     this.hitStop = 0.07; this.ui.hurt(); this.audio.hurt();
-    this.ui.pop(why || '摔车！', this._headPos(), 'warn');
+    this.ui.pop(why || L('摔车！', "Crash!"), this._headPos(), 'warn');
     if (p.hearts <= 0) { this.state = 'dying'; this.dyingT = 0; p.invuln = 99; this.ui.onDying(); }
   }
 
@@ -512,7 +513,7 @@ export class Game {
       if (p.thiefCd <= 0 && p.dist > 350 && p.fish >= 6 && p.grounded && p.feverT <= 0) {
         const e = this.entities.spawn('gull', p.dist - 8, p.lat + 3, 6); e.custom = true; e.state = 2;
         p.thief = { e, t: 0, phase: 0 };
-        this.audio.gull(); this.ui.warn('🔔 海鸥来抢鱼了！快按 B 响铃');
+        this.audio.gull(); this.ui.warn(L('🔔 海鸥来抢鱼了！快按 B 响铃', "🔔 A gull is after your fish! Press B!"));
       }
       return;
     }
@@ -522,14 +523,14 @@ export class Game {
       const k = smooth(th.t / 1.0);
       e.s = p.dist + lerp(-8, 1.2, k); e.u = p.lat + lerp(3.2, 1.5, k) + Math.sin(this.time * 3) * 0.25; e.y = lerp(6, 3.0, k) + Math.sin(this.time * 5) * 0.15 + p.y;
       e.obj.rotation.y = 0.5;
-      if (bellP) { th.phase = 2; th.t = 0; this.R.gulls++; this.addScore(60, '赶走小偷', 'bonus'); this.combo(2, 6); this.ui.warn(null); this.audio.gull(); }
+      if (bellP) { th.phase = 2; th.t = 0; this.R.gulls++; this.addScore(60, L('赶走小偷', "Thief shooed"), 'bonus'); this.combo(2, 6); this.ui.warn(null); this.audio.gull(); }
       else if (th.t > 2.6) { th.phase = 1; th.t = 0; }
     } else if (th.phase === 1) {
       const k = clamp(th.t / 0.35);
       e.s = p.dist + lerp(1.2, 0.7, k); e.u = p.lat + lerp(1.5, 0, k); e.y = lerp(3.0, 1.15, k) + p.y;
       if (k >= 1) {
         const n = Math.min(5, p.fish); p.fish -= n; th.phase = 2; th.t = 0; this.ui.warn(null);
-        if (n) { this.ui.pop(`被抢走 ${n} 条鱼！`, this._headPos(), 'warn'); this.fx.fishPop(this.out.x, this.out.y + 1.1, -p.dist - 0.6, false); }
+        if (n) { this.ui.pop(L(`被抢走 ${n} 条鱼！`, `${n} fish stolen!`), this._headPos(), 'warn'); this.fx.fishPop(this.out.x, this.out.y + 1.1, -p.dist - 0.6, false); }
         this.audio.gull(); p.combo = 0; p.mult = 1; p.comboT = 0;
       }
     } else {
@@ -543,9 +544,9 @@ export class Game {
   _rollWeather() {
     const w = this.weather, r = Math.random();
     const wasRain = w.target > 0.5;
-    if (wasRain) { w.target = 0; if (this.sky.sunVis > 0.5) { w.rainbowT = 45; this.R.rainbow = true; this.ui.toast('🌈', '雨过天晴', '看，彩虹！'); } }
-    else if (r < 0.24 && this.p.dist > 400) { w.target = 1; this.R.rain = true; this.ui.toast('🌧️', '下雨了', '路面湿滑，小心水坑'); }
-    if (this.sky.night > 0.8 && Math.random() < 0.4 && w.target < 0.5) { w.auroraT = 60; this.R.aurora = true; this.ui.toast('🌌', '极光出现了', '抬头看看夜空'); }
+    if (wasRain) { w.target = 0; if (this.sky.sunVis > 0.5) { w.rainbowT = 45; this.R.rainbow = true; this.ui.toast('🌈', L('雨过天晴', "The rain has passed"), L('看，彩虹！', "Look, a rainbow!")); } }
+    else if (r < 0.24 && this.p.dist > 400) { w.target = 1; this.R.rain = true; this.ui.toast('🌧️', L('下雨了', "It’s raining"), L('路面湿滑，小心水坑', "Slippery roads — watch for puddles")); }
+    if (this.sky.night > 0.8 && Math.random() < 0.4 && w.target < 0.5) { w.auroraT = 60; this.R.aurora = true; this.ui.toast('🌌', L('极光出现了', "Aurora!"), L('抬头看看夜空', "Look up at the night sky")); }
   }
   _weather(dt, playing) {
     const w = this.weather, sky = this.sky;
@@ -564,7 +565,7 @@ export class Game {
     for (const a of ACHIEVEMENTS) {
       if (d.ach[a.id]) continue;
       let ok = false; try { ok = a.t(R, T); } catch (e) { ok = false; }
-      if (ok) { d.ach[a.id] = Date.now(); d.fish += 40; this.ui.toast(a.e, '成就 · ' + a.n, a.d + '（+40 🐟）', 'ach'); this.audio.ach(); }
+      if (ok) { d.ach[a.id] = Date.now(); d.fish += 40; this.ui.toast(a.e, L('成就 · ', "Achievement · ") + a.n, a.d + L('（+40 🐟）', " (+40 🐟)"), 'ach'); this.audio.ach(); }
     }
     if (this.state !== 'play' && this.state !== 'dying') return;
     d.missions.forEach((m, i) => {
@@ -574,7 +575,7 @@ export class Game {
       const base = this.missionBase[i] || 0;
       m.prog = tpl.kind === 'run' ? Math.max(m.prog, Math.floor(v)) : base + Math.floor(v);
       if (tpl.kind === 'run' && final && m.prog < m.goal) m.prog = 0;
-      if (m.prog >= m.goal) { m.done = true; m.prog = m.goal; d.fish += m.reward; T.missions++; this.ui.toast('📋', '任务完成', `${tpl.text(m.goal)}（+${m.reward} 🐟）`, 'ach'); this.audio.ach(); }
+      if (m.prog >= m.goal) { m.done = true; m.prog = m.goal; d.fish += m.reward; T.missions++; this.ui.toast('📋', L('任务完成', "Mission complete"), L(`${tpl.text(m.goal)}（+${m.reward} 🐟）`, `${tpl.text(m.goal)} (+${m.reward} 🐟)`), 'ach'); this.audio.ach(); }
     });
   }
 

@@ -430,7 +430,7 @@ export class World {
     const tr = this.track, s = zone.start + 2, cx = tr.cx(s), cy = tr.cy(s), z = -(s - s0);
     const Z = ZONES[zone.key];
     let bm = this.banners[zone.key];
-    if (!bm) { const tex = makeBannerTexture(Z.name, Z.en.toUpperCase(), BANNER_COL[zone.key]); bm = this.banners[zone.key] = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.7, emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: 0.3, side: THREE.DoubleSide }); }
+    if (!bm) { const tex = makeBannerTexture(Z.label.toUpperCase(), Z.sub, BANNER_COL[zone.key]); bm = this.banners[zone.key] = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.7, emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: 0.3, side: THREE.DoubleSide }); }
     for (const sgn of [-1, 1]) solid.tube([cx + sgn * 5.6, cy - 0.5, z], [cx + sgn * 5.6, cy + 7.6, z], 0.16, 7, { c: 0x4a5058 });
     solid.box(11.6, 0.18, 0.18, { p: [cx, cy + 7.55, z], c: 0x4a5058 });
     solid.box(11.6, 0.14, 0.14, { p: [cx, cy + 4.95, z], c: 0x4a5058 });

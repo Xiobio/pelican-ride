@@ -5,13 +5,14 @@ import { ACHIEVEMENTS, MISSIONS, UPGRADES, TIPS, CAM_NAMES } from './data.js';
 import { QUALITY } from './gfx.js';
 import { CAM_ORDER } from './camera.js';
 import { fmtInt, clamp } from './util.js';
+import { L, LANG, switchLang } from './i18n.js';
 
 const $ = (id) => document.getElementById(id);
 const _v = new THREE.Vector3();
 const HAT_E = { helmet: '⛑️', straw: '👒', chef: '🧑‍🍳', pirate: '🏴‍☠️', propeller: '🚁', wizard: '🧙', crown: '👑' };
 const GL_E = { none: '🚫', shades: '🕶️', heart: '💗', goggles: '🥽' };
 const TR_E = { none: '🚫', bubble: '🫧', spark: '✨', petal: '🌸', rainbow: '🌈', flame: '🔥' };
-const TABS = [['hat', '帽子'], ['glasses', '眼镜'], ['scarf', '围巾'], ['paint', '车漆'], ['trail', '尾迹'], ['up', '强化']];
+const TABS = [['hat', L('帽子', "Hats")], ['glasses', L('眼镜', "Glasses")], ['scarf', L('围巾', "Scarves")], ['paint', L('车漆', "Paint")], ['trail', L('尾迹', "Trails")], ['up', L('强化', "Upgrades")]];
 const hex = (n) => '#' + n.toString(16).padStart(6, '0');
 
 export class UI {
@@ -29,7 +30,7 @@ export class UI {
   bind(game) {
     this.game = game;
     document.addEventListener('click', (e) => {
-      const b = e.target.closest('[data-act]'); if (!b) return;
+      const b = e.target.closest('[data-act]'); if (!b) return; if (b.tagName === 'A') e.preventDefault();
       this.audio.init(); this.act(b.dataset.act, b);
     });
     document.querySelectorAll('[data-tap]').forEach((el) => el.addEventListener('pointerdown', (e) => { e.preventDefault(); this.audio.init(); this.input.press(el.dataset.tap); }));
@@ -40,6 +41,9 @@ export class UI {
     const s = this.save.d.settings;
     const seg = $('qualitySeg');
     QUALITY.forEach((q, i) => { const b = document.createElement('button'); b.textContent = q.name; b.className = i === s.quality ? 'on' : ''; b.onclick = () => { s.quality = i; this.gfx.setQuality(i); this.sky.setQuality(i); [...seg.children].forEach((c, j) => c.classList.toggle('on', j === i)); this.save.flush(); this.audio.ui(); }; seg.appendChild(b); });
+    const langSeg = $('langSeg');
+    for (const [code, name] of [['zh', '中文'], ['en', 'English']]) { const b = document.createElement('button'); b.textContent = name; b.className = code === LANG ? 'on' : ''; b.onclick = () => this.setLang(code); langSeg.appendChild(b); }
+    const lt = $('langToggle'); lt.lastChild.nodeValue = LANG === 'en' ? '中文' : 'English';
     const slider = (id, key) => { const el = $(id); el.value = s[key]; el.oninput = () => { s[key] = +el.value; this.audio.setVol(key, s[key]); }; el.onchange = () => { this.save.flush(); this.audio.fish(3); }; };
     slider('volMaster', 'master'); slider('volMusic', 'music'); slider('volSfx', 'sfx');
     const check = (id, key, fn) => { const el = $(id); el.checked = s[key]; el.onchange = () => { s[key] = el.checked; this.save.flush(); fn && fn(el.checked); }; fn && fn(s[key]); };
@@ -73,7 +77,7 @@ export class UI {
     document.body.classList.toggle('zen', mode === 'zen');
     this.last = {}; this.scoreShown = 0; this.el.powers.innerHTML = ''; this.warn(null);
     this.el.zone.classList.remove('show');
-    if (this.save.d.settings.hints && !this.save.d.seen.intro) { this.save.d.seen.intro = 1; setTimeout(() => this.hint(matchMedia('(pointer: coarse)').matches ? '◀ ▶ 转向 · ⤒ 跳跃 · 抓鱼攒连击！' : 'A / D 转向 · 空格跳跃 · 抓鱼攒连击！', 5), 900); }
+    if (this.save.d.settings.hints && !this.save.d.seen.intro) { this.save.d.seen.intro = 1; setTimeout(() => this.hint(matchMedia('(pointer: coarse)').matches ? L('◀ ▶ 转向 · ⤒ 跳跃 · 抓鱼攒连击！', "◀ ▶ steer · ⤒ jump · catch fish to build a combo!") : L('A / D 转向 · 空格跳跃 · 抓鱼攒连击！', "A / D steer · Space jump · catch fish to build a combo!"), 5), 900); }
   }
   onDying() { this.warn(null); }
 
@@ -100,21 +104,23 @@ export class UI {
         this.show(this.prev === 'garage' ? 'title' : this.prev); if (this.prev === null) g.pause(false);
         break;
       case 'cam': this.cycleCam(); break;
+      case 'lang': this.setLang(LANG === 'en' ? 'zh' : 'en'); break;
       case 'music': au.setMusic(!au.musicOn); this.save.d.settings.musicOn = au.musicOn; this.save.flush(); this._musicBtn(); break;
       case 'shot': this.shot(); break;
       case 'flow': this.sky.flow = this.sky.flow ? 0 : 1; btn.classList.toggle('on', !!this.sky.flow); break;
       case 'weather': g.weather.target = g.weather.target > 0.5 ? 0 : 1; if (g.weather.target) g.R.rain = true; btn.classList.toggle('on', g.weather.target > 0.5); break;
       case 'auto': g.auto = !g.auto; btn.classList.toggle('on', g.auto); break;
-      case 'wipe': if (confirm('确定要清除全部存档吗？鱼干、装扮、成就都会消失。')) { this.save.reset(); this.pelican.applyCosmetics(this.save.d.equip); this.refreshTitle(); this.toast('🧹', '存档已清除', '一切从头开始'); } break;
+      case 'wipe': if (confirm(L('确定要清除全部存档吗？鱼干、装扮、成就都会消失。', "Erase all save data? Your fish, cosmetics and achievements will be lost."))) { this.save.reset(); this.pelican.applyCosmetics(this.save.d.equip); this.refreshTitle(); this.toast('🧹', L('存档已清除', "Save erased"), L('一切从头开始', "A fresh start")); } break;
     }
   }
-  cycleCam() { const i = CAM_ORDER.indexOf(this.cam.mode); const m = CAM_ORDER[(i + 1) % CAM_ORDER.length]; this.cam.set(m); this.toast('🎥', '镜头：' + CAM_NAMES[m], '按 C 继续切换'); this.audio.ui(); }
+  setLang(code) { if (code === LANG) return; const g = this.game; if (g.state === 'play' || g.state === 'pause' || g.state === 'dying') g.finish('silent'); switchLang(code, this.save); }
+  cycleCam() { const i = CAM_ORDER.indexOf(this.cam.mode); const m = CAM_ORDER[(i + 1) % CAM_ORDER.length]; this.cam.set(m); this.toast('🎥', L('镜头：', "Camera: ") + CAM_NAMES[m], L('按 C 继续切换', "Press C to switch again")); this.audio.ui(); }
   shot() {
     document.body.classList.add('hide-ui');
     requestAnimationFrame(() => this.gfx.screenshot((blob) => {
       document.body.classList.remove('hide-ui'); if (!blob) return;
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `pelican-ride-${Date.now()}.png`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
-      this.toast('📸', '截图已保存', '分享你的鹈鹕骑行瞬间'); this.audio.ring();
+      this.toast('📸', L('截图已保存', "Screenshot saved"), L('分享你的鹈鹕骑行瞬间', "Share your pelican moment")); this.audio.ring();
     }));
   }
 
@@ -127,39 +133,39 @@ export class UI {
     if (i.take('shot')) this.shot();
     if (i.take('full')) { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen && document.documentElement.requestFullscreen().catch(() => {}); }
     if (i.take('hideui')) document.body.classList.toggle('hide-ui');
-    if (i.take('time')) { this.sky.setTime(this.sky.time + 3); this.toast('⏩', '时间快进 3 小时', '现在是 ' + this.sky.clock); }
+    if (i.take('time')) { this.sky.setTime(this.sky.time + 3); this.toast('⏩', L('时间快进 3 小时', "Skipped ahead 3 hours"), L('现在是 ', "It’s now ") + this.sky.clock); }
     if (i.take('restart') && (g.state === 'over' || g.state === 'pause')) this.act(g.state === 'over' ? 'again' : 'restart');
     if (i.take('ok')) { if (this.screen === 'title') this.act('play'); else if (g.state === 'over' && this.screen === 'over') this.act('again'); }
   }
 
   // ---------- HUD ----------
   hud(dt) {
-    const g = this.game, p = g.p, L = this.last, E = this.el;
+    const g = this.game, p = g.p, S = this.last, E = this.el;
     if (!this.inRun) return;
     // 分数平滑滚动
     this.scoreShown += (p.score - this.scoreShown) * Math.min(1, dt * 10);
-    const sc = Math.round(this.scoreShown); if (sc !== L.sc) { L.sc = sc; E.score.textContent = fmtInt(sc); }
+    const sc = Math.round(this.scoreShown); if (sc !== S.sc) { S.sc = sc; E.score.textContent = fmtInt(sc); }
     const mult = g._mult();
-    if (mult !== L.mult) { E.mult.textContent = '×' + (Number.isInteger(mult) ? mult : mult.toFixed(2).replace(/0$/, '')); E.mult.classList.toggle('hot', mult >= 3); if (mult > (L.mult || 1)) { E.mult.classList.remove('bump'); void E.mult.offsetWidth; E.mult.classList.add('bump'); } L.mult = mult; }
+    if (mult !== S.mult) { E.mult.textContent = '×' + (Number.isInteger(mult) ? mult : mult.toFixed(2).replace(/0$/, '')); E.mult.classList.toggle('hot', mult >= 3); if (mult > (S.mult || 1)) { E.mult.classList.remove('bump'); void E.mult.offsetWidth; E.mult.classList.add('bump'); } S.mult = mult; }
     E.comboFill.style.transform = `scaleX(${clamp(p.comboT / p.comboMax)})`;
-    if (p.combo !== L.combo) { L.combo = p.combo; E.comboN.textContent = p.combo > 1 ? `连击 ${p.combo}` : ''; }
+    if (p.combo !== S.combo) { S.combo = p.combo; E.comboN.textContent = p.combo > 1 ? L(`连击 ${p.combo}`, `Combo ${p.combo}`) : ''; }
     E.boostFill.style.transform = `scaleX(${p.boost / 100})`;
-    const ready = p.boost >= 12 || p.boosting; if (ready !== L.ready) { L.ready = ready; E.boostFill.parentElement.classList.toggle('ready', ready); }
+    const ready = p.boost >= 12 || p.boosting; if (ready !== S.ready) { S.ready = ready; E.boostFill.parentElement.classList.toggle('ready', ready); }
     E.feverFill.style.transform = `scaleX(${p.fever / 100})`;
-    const fev = p.feverT > 0; if (fev !== L.fev) { L.fev = fev; E.feverFill.parentElement.classList.toggle('on', fev); }
-    const ft = fev ? Math.ceil(p.feverT) + 's' : '狂热'; if (ft !== L.ft) { L.ft = ft; E.feverTxt.textContent = ft; }
+    const fev = p.feverT > 0; if (fev !== S.fev) { S.fev = fev; E.feverFill.parentElement.classList.toggle('on', fev); }
+    const ft = fev ? Math.ceil(p.feverT) + 's' : L('狂热', "Frenzy"); if (ft !== S.ft) { S.ft = ft; E.feverTxt.textContent = ft; }
     const kmh = Math.round(p.speed * 3.6);
-    if (kmh !== L.kmh) { L.kmh = kmh; E.speedVal.textContent = kmh; E.speedArc.style.strokeDashoffset = 245 * (1 - clamp(kmh / 80)); }
-    if (p.fish !== L.fish) { const up = p.fish > (L.fish || 0); L.fish = p.fish; E.fishN.textContent = p.fish; if (up) { E.fishN.classList.remove('bump'); void E.fishN.offsetWidth; E.fishN.classList.add('bump'); } }
+    if (kmh !== S.kmh) { S.kmh = kmh; E.speedVal.textContent = kmh; E.speedArc.style.strokeDashoffset = 245 * (1 - clamp(kmh / 80)); }
+    if (p.fish !== S.fish) { const up = p.fish > (S.fish || 0); S.fish = p.fish; E.fishN.textContent = p.fish; if (up) { E.fishN.classList.remove('bump'); void E.fishN.offsetWidth; E.fishN.classList.add('bump'); } }
     const hk = p.hearts + '/' + p.maxHearts;
-    if (hk !== L.hk) {
-      const lost = L.hearts !== undefined && p.hearts < L.hearts; L.hk = hk; L.hearts = p.hearts;
+    if (hk !== S.hk) {
+      const lost = S.hearts !== undefined && p.hearts < S.hearts; S.hk = hk; S.hearts = p.hearts;
       E.hearts.innerHTML = Array.from({ length: p.maxHearts }, (_, i) => `<span class="${i >= p.hearts ? 'lost' : ''}${lost && i === p.hearts ? ' pop' : ''}">❤️</span>`).join('');
     }
     // 道具计时
     const pk = (p.magnetT > 0 ? 'm' : '') + (p.x2T > 0 ? 'x' : '') + (p.shield ? 's' : '') + (p.boosting ? 'b' : '');
-    if (pk !== L.pk) {
-      L.pk = pk; let h = '';
+    if (pk !== S.pk) {
+      S.pk = pk; let h = '';
       if (p.magnetT > 0) h += '<div class="pw" data-p="m"><i></i><span>🧲</span></div>';
       if (p.x2T > 0) h += '<div class="pw" data-p="x"><i></i><span>✖️2</span></div>';
       if (p.shield) h += '<div class="pw"><span>🛡️</span></div>';
@@ -211,7 +217,7 @@ export class UI {
   }
   hintOnce(key, text) { const s = this.save.d.seen; if (s['h_' + key]) return; s['h_' + key] = 1; this.hint(text); }
   zoneBanner(Z) {
-    const E = this.el; E.zoneEmoji.textContent = Z.emoji; E.zoneName.textContent = Z.name; E.zoneEn.textContent = Z.en.toUpperCase();
+    const E = this.el; E.zoneEmoji.textContent = Z.emoji; E.zoneName.textContent = Z.label; E.zoneEn.textContent = Z.sub;
     E.zone.classList.add('show'); clearTimeout(this._zoneT); this._zoneT = setTimeout(() => E.zone.classList.remove('show'), 3200);
   }
   warn(text) { const w = this.el.warn; if (text) { w.textContent = text; w.hidden = false; } else w.hidden = true; }
@@ -222,16 +228,16 @@ export class UI {
     const d = this.save.d;
     $('walletT').textContent = fmtInt(d.fish); $('bestT').textContent = fmtInt(d.best.adventure); $('bestDistT').textContent = fmtInt(d.best.dist);
     $('achT').textContent = Object.keys(d.ach).length + '/' + ACHIEVEMENTS.length;
-    $('dailyBest').textContent = d.best.daily ? '最高 ' + fmtInt(d.best.daily) : '';
+    $('dailyBest').textContent = d.best.daily ? L('最高 ', "Best ") + fmtInt(d.best.daily) : '';
   }
 
   // ---------- 结算 ----------
   showResults(r) {
     const d = this.save.d, R = r.R, zen = r.mode === 'zen';
-    $('overTitle').textContent = zen ? '收工啦，今天也骑得很开心' : r.mode === 'daily' ? '每日挑战结束' : '骑行结束';
+    $('overTitle').textContent = zen ? L('收工啦，今天也骑得很开心', "That’s a wrap — lovely ride") : r.mode === 'daily' ? L('每日挑战结束', "Daily run over") : L('骑行结束', "Ride over");
     $('overBadge').hidden = !r.record;
     $('overScore').textContent = fmtInt(r.score); $('overBest').textContent = fmtInt(r.best);
-    const cells = [['里程', fmtInt(r.dist) + ' m'], ['抓到的鱼', R.fish + (R.gold ? `（金 ${R.gold}）` : '')], ['最高连击', R.maxCombo], ['空中特技', R.tricks], ['极限闪避', R.near], ['最高时速', Math.round(R.maxSpeed) + ' km/h'], ['完美落地', R.perfect], ['狂热次数', R.fevers], ['经过路段', R.zones + ' / 6']];
+    const cells = [[L('里程', "Distance"), fmtInt(r.dist) + ' m'], [L('抓到的鱼', "Fish caught"), R.fish + (R.gold ? L(`（金 ${R.gold}）`, ` (${R.gold} gold)`) : '')], [L('最高连击', "Best combo"), R.maxCombo], [L('空中特技', "Air tricks"), R.tricks], [L('极限闪避', "Near misses"), R.near], [L('最高时速', "Top speed"), Math.round(R.maxSpeed) + ' km/h'], [L('完美落地', "Perfect landings"), R.perfect], [L('狂热次数', "Frenzies"), R.fevers], [L('经过路段', "Zones visited"), R.zones + ' / 6']];
     $('overGrid').innerHTML = cells.map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join('');
     $('overFish').textContent = fmtInt(r.fish); $('overWallet').textContent = fmtInt(d.fish);
     const om = $('overMissions'); om.innerHTML = '';
@@ -270,7 +276,7 @@ export class UI {
       for (const k in UPGRADES) {
         const U = UPGRADES[k], lv = d.up[k], max = lv >= U.max;
         const el = document.createElement('div'); el.className = 'item up' + (max ? ' equipped' : '');
-        el.innerHTML = `<span class="emo">${U.e}</span><b>${U.n} <span class="pips">${'●'.repeat(lv)}${'○'.repeat(U.max - lv)}</span></b><span class="cost">${max ? '已满级' : '🐟 ' + U.cost[lv]}</span><small>${U.d}</small>`;
+        el.innerHTML = `<span class="emo">${U.e}</span><b>${U.n} <span class="pips">${'●'.repeat(lv)}${'○'.repeat(U.max - lv)}</span></b><span class="cost">${max ? L('已满级', "MAX") : '🐟 ' + U.cost[lv]}</span><small>${U.d}</small>`;
         el.onclick = () => {
           if (max) return;
           if (d.fish >= U.cost[lv]) { d.fish -= U.cost[lv]; d.up[k]++; d.total.bought++; this.save.flush(); this.audio.buy(); this._renderGarage(); this.game._checkProgress(false); }
@@ -288,11 +294,11 @@ export class UI {
       if (cat === 'paint') sw = `<div class="sw" style="background:${hex(it.col)}"></div>`;
       else if (cat === 'scarf') sw = `<div class="sw" style="background:${it.cols === 'rainbow' ? 'conic-gradient(red,orange,yellow,lime,cyan,blue,magenta,red)' : `linear-gradient(135deg, ${hex(it.cols[0])} 50%, ${hex(it.cols[1])} 50%)`}"></div>`;
       else sw = `<div class="sw">${(cat === 'hat' ? HAT_E : cat === 'glasses' ? GL_E : TR_E)[id]}</div>`;
-      el.innerHTML = `${sw}<b>${it.name}</b><small>${eq ? '使用中' : owned ? '已拥有 · 点击装备' : '🐟 ' + it.price}</small>`;
+      el.innerHTML = `${sw}<b>${it.name}</b><small>${eq ? L('使用中', "Equipped") : owned ? L('已拥有 · 点击装备', "Owned · tap to equip") : '🐟 ' + it.price}</small>`;
       el.onclick = () => {
         if (owned) { d.equip[cat] = id; this.save.flush(); this.pelican.applyCosmetics(d.equip); this.audio.ui(); this._renderGarage(); }
         else if (d.fish >= it.price) { d.fish -= it.price; d.owned[cat].push(id); d.equip[cat] = id; d.total.bought++; this.save.flush(); this.pelican.applyCosmetics(d.equip); this.audio.buy(); this._renderGarage(); this.game._checkProgress(false); }
-        else { this.pelican.applyCosmetics({ ...d.equip, [cat]: id }); this.audio.deny(); grid.querySelectorAll('.preview').forEach(x => x.classList.remove('preview')); el.classList.add('deny', 'preview'); el.querySelector('small').textContent = `🐟 ${it.price} · 试穿中`; setTimeout(() => el.classList.remove('deny'), 300); }
+        else { this.pelican.applyCosmetics({ ...d.equip, [cat]: id }); this.audio.deny(); grid.querySelectorAll('.preview').forEach(x => x.classList.remove('preview')); el.classList.add('deny', 'preview'); el.querySelector('small').textContent = L(`🐟 ${it.price} · 试穿中`, `🐟 ${it.price} · trying on`); setTimeout(() => el.classList.remove('deny'), 300); }
       };
       grid.appendChild(el);
     }

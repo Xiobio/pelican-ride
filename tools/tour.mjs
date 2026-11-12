@@ -11,7 +11,7 @@ await page.setViewport({ width: W, height: H, deviceScaleFactor: 1, hasTouch: o.
 const logs = [];
 page.on('console', m => { if (m.type() === 'error' || m.type() === 'warning') logs.push(`[${m.type()}] ${m.text()}`); });
 page.on('pageerror', e => logs.push('[pageerror] ' + (e.stack || e.message)));
-await page.goto(pathToFileURL(path.resolve('dist/index.html')).href, { waitUntil: 'load' });
+await page.goto(pathToFileURL(path.resolve('dist/index.html')).href + (o.lang ? '?lang=' + o.lang : ''), { waitUntil: 'load' });
 await new Promise(r => setTimeout(r, 1200));
 const info = await page.evaluate((o) => {
   const G = window.__g, g = G.game;

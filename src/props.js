@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import { Geo } from './geo.js';
 import { makeRng, TAU } from './util.js';
+import { L } from './i18n.js';
 
 const PI = Math.PI;
 const WHITE = 0xf2efe6, WOOD = 0x8a5a36, WOOD_D = 0x5e3c24, METAL = 0x4a5058, METAL_L = 0x9aa3ad;
@@ -412,6 +413,7 @@ export function buildSignAtlas() {
   const x = c.getContext('2d');
   const cells = {};
   const font = '"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif';
+  const fit = (text, px, maxW) => { x.font = `900 ${px}px ${font}`; const w = x.measureText(text).width; if (w > maxW) x.font = `900 ${Math.floor(px * maxW / w)}px ${font}`; };
   const diamond = (i, j, emoji, text, bg = '#ffcc33') => {
     const cx = i * 256 + 128, cy = j * 256 + 128;
     x.save(); x.translate(cx, cy); x.rotate(Math.PI / 4);
@@ -419,20 +421,20 @@ export function buildSignAtlas() {
     x.fillStyle = bg; rr(x, -76, -76, 152, 152, 13); x.fill(); x.restore();
     x.fillStyle = '#1a1a1a'; x.textAlign = 'center'; x.textBaseline = 'middle';
     x.font = `64px ${font}`; x.fillText(emoji, cx, cy - 22);
-    x.font = `900 30px ${font}`; x.fillText(text, cx, cy + 40);
+    fit(text, 30, 122); x.fillText(text, cx, cy + 40);
   };
   const names = [];
   const put = (name, i, j, w = 1) => { cells[name] = [i * 256 / W, 1 - (j + 1) * 256 / H, (i + w) * 256 / W, 1 - j * 256 / H]; names.push(name); };
-  diamond(0, 0, '🐟', '前方有鱼'); put('fish', 0, 0);
-  diamond(1, 0, '🦀', '小心螃蟹'); put('crab', 1, 0);
-  diamond(2, 0, '🚲', '鹈鹕专用道', '#7ad0ff'); put('lane', 2, 0);
+  diamond(0, 0, '🐟', L('前方有鱼', "FISH AHEAD")); put('fish', 0, 0);
+  diamond(1, 0, '🦀', L('小心螃蟹', "CRAB XING")); put('crab', 1, 0);
+  diamond(2, 0, '🚲', L('鹈鹕专用道', "BIRD LANE"), '#7ad0ff'); put('lane', 2, 0);
   // 限速牌
   { const cx = 3 * 256 + 128, cy = 128; x.fillStyle = '#fff'; x.beginPath(); x.arc(cx, cy, 104, 0, 7); x.fill(); x.strokeStyle = '#e02e2e'; x.lineWidth = 22; x.beginPath(); x.arc(cx, cy, 90, 0, 7); x.stroke();
-    x.fillStyle = '#1a1a1a'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.font = `900 84px ${font}`; x.fillText('45', cx, cy - 8); x.font = `900 24px ${font}`; x.fillText('鹈鹕限速', cx, cy + 50); put('limit', 3, 0); }
-  diamond(0, 1, '🐦', '禁止抢鱼', '#ff9a6a'); put('gull', 0, 1);
-  diamond(1, 1, '🛹', '前有跳台'); put('ramp', 1, 1);
-  diamond(2, 1, '🐋', '鲸鱼出没', '#8fe3c8'); put('whale', 2, 1);
-  diamond(3, 1, '🔔', '请勤按铃', '#ffe680'); put('bell', 3, 1);
+    x.fillStyle = '#1a1a1a'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.font = `900 84px ${font}`; x.fillText('45', cx, cy - 8); fit(L('鹈鹕限速', "PELICANS"), 24, 104); x.fillText(L('鹈鹕限速', "PELICANS"), cx, cy + 50); put('limit', 3, 0); }
+  diamond(0, 1, '🐦', L('禁止抢鱼', "NO STEALING"), '#ff9a6a'); put('gull', 0, 1);
+  diamond(1, 1, '🛹', L('前有跳台', "RAMP AHEAD")); put('ramp', 1, 1);
+  diamond(2, 1, '🐋', L('鲸鱼出没', "WHALES"), '#8fe3c8'); put('whale', 2, 1);
+  diamond(3, 1, '🔔', L('请勤按铃', "RING BELL"), '#ffe680'); put('bell', 3, 1);
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
   return { texture: tex, cells, names };
@@ -447,8 +449,8 @@ export function makeBannerTexture(text, sub, color = '#1d6f8a') {
   x.fillStyle = g; rr(x, 0, 0, 1024, 256, 36); x.fill();
   x.strokeStyle = 'rgba(255,255,255,0.85)'; x.lineWidth = 10; rr(x, 14, 14, 996, 228, 26); x.stroke();
   x.fillStyle = '#fff'; x.textAlign = 'center'; x.textBaseline = 'middle';
-  x.font = '900 118px "PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif'; x.fillText(text, 512, 108);
-  x.font = '600 40px "Segoe UI",sans-serif'; x.fillStyle = 'rgba(255,255,255,0.85)'; x.fillText(sub, 512, 204);
+  { const f = '"PingFang SC","Microsoft YaHei","Noto Sans SC","Segoe UI",sans-serif'; x.font = `900 118px ${f}`; const w = x.measureText(text).width; if (w > 900) x.font = `900 ${Math.floor(118 * 900 / w)}px ${f}`; } x.fillText(text, 512, 108);
+  x.font = '600 40px "Segoe UI","PingFang SC","Microsoft YaHei",sans-serif'; x.fillStyle = 'rgba(255,255,255,0.85)'; x.fillText(sub, 512, 204);
   const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
   return tex;
 }

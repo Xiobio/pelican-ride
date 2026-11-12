@@ -87,6 +87,11 @@ h1 { margin: 0; font-size: clamp(40px, 7.4vw, 68px); letter-spacing: 0.04em; fon
 .title-stats b { color: var(--text); font-variant-numeric: tabular-nums; }
 .tip { margin-top: 14px; color: var(--muted); font-size: 13px; line-height: 1.7; min-height: 44px; }
 .tip::before { content: "💡 "; }
+html[lang=en] { --font: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif; }
+html[lang=en] h1 { letter-spacing: 0.01em; }
+html[lang=en] .menu .row .btn.sm { font-size: 13px; padding-left: 4px; padding-right: 4px; }
+html[lang=en] .zone b { letter-spacing: 0.04em; }
+html[lang=en] .zone small { letter-spacing: 0.3em; font-size: 13px; }
 .title-links { margin-top: 6px; display: flex; gap: 18px; flex-wrap: wrap; }
 .title-links a { color: var(--muted); text-decoration: none; font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px; transition: color 0.15s; }
 .title-links a:hover { color: #fff; }

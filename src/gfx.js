@@ -5,6 +5,7 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { L } from './i18n.js';
 
 const GradeShader = {
   uniforms: {
@@ -42,10 +43,10 @@ const GradeShader = {
 };
 
 export const QUALITY = [
-  { name: '流畅', dpr: 1.0, msaa: 0, bloom: false },
-  { name: '均衡', dpr: 1.25, msaa: 2, bloom: true },
-  { name: '精美', dpr: 1.5, msaa: 4, bloom: true },
-  { name: '极致', dpr: 2.0, msaa: 4, bloom: true },
+  { name: L('流畅', "Low"), dpr: 1.0, msaa: 0, bloom: false },
+  { name: L('均衡', "Medium"), dpr: 1.25, msaa: 2, bloom: true },
+  { name: L('精美', "High"), dpr: 1.5, msaa: 4, bloom: true },
+  { name: L('极致', "Ultra"), dpr: 2.0, msaa: 4, bloom: true },
 ];
 
 export class Gfx {

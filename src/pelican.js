@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import { Geo, selfLit } from './geo.js';
 import { clamp, lerp, damp, smooth, easeInOut, TAU } from './util.js';
+import { L } from './i18n.js';
 
 const PI = Math.PI;
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
@@ -19,19 +20,19 @@ const BASKET = [0, 1.0, -0.68];
 
 export const COSMETICS = {
   hat: {
-    helmet: { name: '经典头盔', price: 0 }, straw: { name: '海边草帽', price: 250 }, chef: { name: '厨师高帽', price: 450 },
-    pirate: { name: '海盗船长', price: 700 }, propeller: { name: '竹蜻蜓帽', price: 1000 }, wizard: { name: '星星巫师帽', price: 1500 }, crown: { name: '鹈鹕王冠', price: 3000 },
+    helmet: { name: L('经典头盔', "Classic Helmet"), price: 0 }, straw: { name: L('海边草帽', "Straw Hat"), price: 250 }, chef: { name: L('厨师高帽', "Chef’s Toque"), price: 450 },
+    pirate: { name: L('海盗船长', "Pirate Captain"), price: 700 }, propeller: { name: L('竹蜻蜓帽', "Propeller Beanie"), price: 1000 }, wizard: { name: L('星星巫师帽', "Starry Wizard Hat"), price: 1500 }, crown: { name: L('鹈鹕王冠', "Pelican Crown"), price: 3000 },
   },
-  glasses: { none: { name: '不戴', price: 0 }, shades: { name: '酷黑墨镜', price: 200 }, heart: { name: '爱心眼镜', price: 500 }, goggles: { name: '飞行风镜', price: 800 } },
+  glasses: { none: { name: L('不戴', "None"), price: 0 }, shades: { name: L('酷黑墨镜', "Cool Shades"), price: 200 }, heart: { name: L('爱心眼镜', "Heart Glasses"), price: 500 }, goggles: { name: L('飞行风镜', "Aviator Goggles"), price: 800 } },
   scarf: {
-    red: { name: '经典红', price: 0, cols: [0xd7263d, 0xd7263d] }, stripe: { name: '海军条纹', price: 220, cols: [0x1f4e8c, 0xf4f1ea] }, mint: { name: '薄荷绿', price: 350, cols: [0x3fd0a0, 0x2a9a7a] },
-    sunset: { name: '晚霞渐变', price: 600, cols: [0xff7a3d, 0xffd24a] }, rainbow: { name: '彩虹', price: 1200, cols: 'rainbow' }, gold: { name: '黄金锦缎', price: 2200, cols: [0xffd24a, 0xfff2a8] },
+    red: { name: L('经典红', "Classic Red"), price: 0, cols: [0xd7263d, 0xd7263d] }, stripe: { name: L('海军条纹', "Navy Stripes"), price: 220, cols: [0x1f4e8c, 0xf4f1ea] }, mint: { name: L('薄荷绿', "Mint"), price: 350, cols: [0x3fd0a0, 0x2a9a7a] },
+    sunset: { name: L('晚霞渐变', "Sunset Fade"), price: 600, cols: [0xff7a3d, 0xffd24a] }, rainbow: { name: L('彩虹', "Rainbow"), price: 1200, cols: 'rainbow' }, gold: { name: L('黄金锦缎', "Gold Brocade"), price: 2200, cols: [0xffd24a, 0xfff2a8] },
   },
   paint: {
-    teal: { name: '湖水青', price: 0, col: 0x138a8a }, cherry: { name: '樱桃红', price: 250, col: 0xc0283a }, mint: { name: '奶油薄荷', price: 400, col: 0x8fdcc0 },
-    sun: { name: '向日葵黄', price: 550, col: 0xf2b92e }, pink: { name: '泡泡糖粉', price: 750, col: 0xf07aa8 }, night: { name: '午夜黑金', price: 1800, col: 0x15161c },
+    teal: { name: L('湖水青', "Lake Teal"), price: 0, col: 0x138a8a }, cherry: { name: L('樱桃红', "Cherry Red"), price: 250, col: 0xc0283a }, mint: { name: L('奶油薄荷', "Cream Mint"), price: 400, col: 0x8fdcc0 },
+    sun: { name: L('向日葵黄', "Sunflower"), price: 550, col: 0xf2b92e }, pink: { name: L('泡泡糖粉', "Bubblegum"), price: 750, col: 0xf07aa8 }, night: { name: L('午夜黑金', "Midnight Gold"), price: 1800, col: 0x15161c },
   },
-  trail: { none: { name: '无', price: 0 }, bubble: { name: '泡泡', price: 400 }, spark: { name: '星屑', price: 750 }, petal: { name: '花瓣', price: 900 }, rainbow: { name: '彩虹尾迹', price: 2000 }, flame: { name: '烈焰', price: 2600 } },
+  trail: { none: { name: L('无', "None"), price: 0 }, bubble: { name: L('泡泡', "Bubbles"), price: 400 }, spark: { name: L('星屑', "Stardust"), price: 750 }, petal: { name: L('花瓣', "Petals"), price: 900 }, rainbow: { name: L('彩虹尾迹', "Rainbow Trail"), price: 2000 }, flame: { name: L('烈焰', "Flames"), price: 2600 } },
 };
 
 function leafGeometry(len, w, tipDark = 0, bend = 0.15) {

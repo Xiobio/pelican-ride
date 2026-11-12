@@ -1,18 +1,17 @@
 # 鹈鹕骑单车 · 海岸大冒险（Pelican Ride）
 
+**中文** | [English](README.en.md)
+
 一只戴头盔、围红围巾的白鹈鹕，骑着复古单车沿海岸线追鱼、飞跃跳台、做空中特技。
 实时 3D 无尽跑酷，模型、地形、天空、海浪、音效和音乐全部由代码生成，没有任何外部素材。
 
-**在线试玩：<https://pelicanride.vercel.app>**
+**在线试玩：<https://pelicanride.vercel.app>**（支持中文 / English）
 
 > 本项目由 Fable 5.2 制作。
 
-![标题画面](docs/title.png)
+[![宣传视频（点击观看带声音的完整版）](docs/promo.gif)](https://pelicanride.vercel.app/promo.mp4)
 
-| | |
-|---|---|
-| ![海岸公路](docs/coast.png) | ![渔村小镇](docs/village.png) |
-| ![樱花坡道夜景](docs/blossom-night.png) | ![跨海大桥](docs/bridge.png) |
+▶ [观看 32 秒完整宣传片（带声音）](https://pelicanride.vercel.app/promo.mp4) —— 画面是游戏实机逐帧录制，声音是游戏自己实时合成的音乐和音效。
 
 ## 玩法
 
@@ -39,6 +38,7 @@
 - **六种路段**：海岸公路、渔村小镇、棕榈沙滩、灯塔悬崖、跨海大桥、樱花坡道
 - **天气与事件**：昼夜循环、下雨打雷、雨后彩虹、极光、流星、鲸鱼跃出、海豚伴游、里程烟花
 - **成长线**：37 个成就、滚动刷新的任务、车库装扮与五项强化，存档保存在浏览器本地
+- **中英双语**：按浏览器语言自动选择，可在标题页或设置里切换；也可以用 `?lang=en` / `?lang=zh` 指定
 
 ## 技术
 
@@ -56,16 +56,20 @@ npm run build      # 生成 dist/index.html，双击即可运行
 npm run dev        # 不压缩的调试版本
 ```
 
-`tools/` 里是基于无头 Chrome 的测试脚本（需要本机装有 Chrome，路径不同时请修改脚本里的 `executablePath`）：
+`tools/` 里是基于无头 Chrome 的脚本（需要本机装有 Chrome，路径不同时设置环境变量 `CHROME_PATH` 或修改脚本里的路径）：
 
 ```bash
-npm run test:keys  # 真实按键冒烟测试
-npm run test:sim   # 自动驾驶长时间快进模拟
+npm run test:keys          # 真实按键冒烟测试（可加参数 en 测英文版）
+npm run test:sim           # 自动驾驶长时间快进模拟
+node tools/promo-video.mjs # 重新录制宣传视频（需要 ffmpeg，可用环境变量 FFMPEG 指定路径）
 ```
+
+宣传视频的录制方式：把游戏时钟换成虚拟时钟逐帧推进并截图，同时把游戏的 `AudioContext` 换成 `OfflineAudioContext` 离线渲染原声，最后用 ffmpeg 合成，所以不受录制机器帧率影响。
 
 ## 致谢
 
 创意和界面风格参考了 [riba2534 的鹈鹕骑单车演示](https://github.com/riba2534/claude-opus-5-5-demo)，本仓库的代码为独立编写。
+“让模型画一只骑自行车的鹈鹕”这个梗来自 [Simon Willison 的测评](https://simonwillison.net/tags/pelican-riding-a-bicycle/)。
 
 ## 作者
 
